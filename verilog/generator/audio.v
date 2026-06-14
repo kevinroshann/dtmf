@@ -2,15 +2,17 @@
 
 module audio(
     input clk,
-    input [4:0] key1,
+    input [4:0] key,
     output reg audio_l,audio_r
 
     );
 
-reg [4:0] key;
-always @(*) begin
-    key <= 5'd1;
-end
+// reg [4:0] key;
+// always @(*) begin
+//     key <= 5'd1;
+// end
+
+
     parameter clkfreq=12000000; // 12MHz
 
 reg [15:0] freq_r ;
@@ -23,10 +25,9 @@ assign phase_inc_c = freq_c * 358;
 
 always @(*) begin
     case (key)
-        5'd1: freq_r = 697;
-        5'd2: freq_r = 540;
-        5'd3: freq_r = 640;
-        5'd4: freq_r = 740;
+5'd1,5'd2,5'd3 : freq_r = 697;
+5'd4,5'd5,5'd6 : freq_r = 770;
+5'd7,5'd8,5'd9 : freq_r = 852;
 
         default: freq_r = 0;
     endcase
@@ -34,10 +35,9 @@ end
 
 always @(*) begin
     case (key)
-        5'd1: freq_c = 1209;
-        5'd2: freq_c = 6000;
-        5'd3: freq_c = 7000;
-        5'd4: freq_c = 8000;
+5'd1,5'd4,5'd7 : freq_c = 1209;
+5'd2,5'd5,5'd8 : freq_c = 1336;
+5'd3,5'd6,5'd9 : freq_c = 1477;
 
         default: freq_c = 0;
     endcase

@@ -5,7 +5,10 @@ module top_module(
         input r3,r4,
         output c1,c2,
         output c3,
-        output c4
+        output c4,
+            output reg led_blue_n,
+    output reg led_amber_n,
+    output reg led_rgb_green_n
     );
 
 wire [4:0] key;
@@ -13,7 +16,7 @@ wire audio_l,audio_r;
 
 audio audio_inst(
     .clk(clk),
-    .key1(key),  
+    .key(key),  
     .audio_l(audio_l),
     .audio_r(audio_r)
 );
@@ -36,18 +39,31 @@ audio audio_inst(
 //     .key(key)
 // );
 
-button_test3 button_inst3(
+// button_test3 button_inst3(
+//     .clk(clk),
+//     .r1(r1),
+//     .r2(r2),
+//     // .r3(r3),
+//     .c1(c1),
+//     .c2(c2),
+//     // .c3(c3),
+//     .key(key)
+// );
+
+button5 button_inst5(
     .clk(clk),
     .r1(r1),
     .r2(r2),
-    // .r3(r3),
+    .r3(r3),
     .c1(c1),
     .c2(c2),
-    // .c3(c3),
-    .key(key)
+    .c3(c3),
+    .key(key),
+    .led_blue_n(led_blue_n),
+    .led_amber_n(led_amber_n),
+    .led_rgb_green_n(led_rgb_green_n)
+
 );
-
-
 
 // button_test4 button_inst4(
 //     .clk(clk),
@@ -63,3 +79,4 @@ button_test3 button_inst3(
 // );
 
     endmodule
+
