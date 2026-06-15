@@ -1,5 +1,3 @@
-/* Ref: mmicko FPGA101 workshop tutorials - https://github.com/mmicko/fpga101-workshop/blob/master/tutorials/04-Audio/audio.v */
-
 module audio(
     input clk,
     input [4:0] key,
@@ -13,14 +11,14 @@ module audio(
 // end
 
 
-    parameter clkfreq=12000000; // 12MHz
+parameter clkfreq=12000000; 
 
 reg [15:0] freq_r ;
 reg [15:0] freq_c ;
 wire key_pressed = (key >= 5'd1 && key <= 5'd16);
 wire [31:0] phase_inc_r;
 wire [31:0] phase_inc_c;
-assign phase_inc_r = freq_r * 358;
+assign phase_inc_r = freq_r * 358; //freq*2**32/clock frequency
 assign phase_inc_c = freq_c * 358;
 
 always @(*) begin
@@ -54,14 +52,13 @@ wire [7:0] addr_c;
 
 assign addr_r = counter_r[31:24];
 assign addr_c = counter_c[31:24];
-// Clear or freeze the counter when no keys are pressed to avoid idle leaking noise
 always @(posedge clk) begin
     if (key_pressed) begin
         counter_r <= counter_r + phase_inc_r;
         counter_c <= counter_c + phase_inc_c;
     end else begin
-        counter_r <= 32'd0; // Completely flattens the DDS wave table index when idle
-        counter_c <= 32'd0; // Completely flattens the DDS wave table index when idle
+        counter_r <= 32'd0; 
+        counter_c <= 32'd0; 
     end
 end
 
@@ -70,13 +67,13 @@ wire [15:0] sample_c= sine_out_c + 16'd32768;
 wire [16:0] mixer= sample_r + sample_c;
 
 
-reg [17:0] acc = 0; // 17 bits to prevent overflow when adding two 16-bit samples together
+reg [17:0] acc = 0;
 always @(posedge clk) begin
     if (key_pressed) begin
-        // Only run the sigma-delta modulator when a key is active
+      
 acc <= {1'b0, acc[16:0]} + mixer;
     end else begin
-        // Completely freeze the accumulator when idle
+
         acc <= 18'd0;
     end
 end
