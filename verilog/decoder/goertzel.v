@@ -170,7 +170,12 @@ module goertzel (
 
     // Goertzel state update equation
     wire signed [31:0] s_next;
-    assign s_next = {{16{sample[15]}}, sample} + ((COEFF[i] * s1) >>> 14) - s2;
+    
+    // --- THE FIXED LINE ---
+    // Perform multiplication in 48-bit signed width to completely prevent 32-bit intermediate overflow
+    wire signed [47:0] s1_prod;
+    assign s1_prod = COEFF[i] * s1;
+    assign s_next = {{16{sample[15]}}, sample} + (s1_prod >>> 14) - s2;
 
     // Scale intermediate variables down by 4 bits to prevent overflow during multiplication
     wire signed [63:0] s_next_scaled = s_next >>> 4;
@@ -181,7 +186,7 @@ module goertzel (
                  + (s1_scaled * s1_scaled) 
                  - (((COEFF[i] * s_next_scaled * s1_scaled) >>> 14));
 
-    // EVERYTHING IS CONTROLLED HERE (NO ALWAYS @(*) FOR MAX TRACKING)
+    // Synchronous controller
     always @(posedge clk) begin
         if (reset) begin
             addr      <= 7'd0;

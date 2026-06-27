@@ -1,7 +1,7 @@
 import math
 
 FS = 8000.0
-FREQ = 1633.0
+FREQ = 1477.0
 
 for n in range(128):
     v = round(32767 * math.sin(2 * math.pi * FREQ * n / FS))
