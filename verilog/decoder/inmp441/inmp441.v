@@ -5,6 +5,9 @@ module inmp441(
     output reg  sck = 0,  // 1.5 MHz
     output reg  ws  = 0,  // LRCLK
 
+    output reg [23:0] sample = 0,        // Exposed as output
+    output reg        sample_valid = 0,  // Exposed as output
+
     output reg led_amber_n = 1,
     output reg led_blue_n  = 1
 );
@@ -15,8 +18,6 @@ module inmp441(
     // I2S receive
     reg [5:0]  bit_cnt = 0;
     reg [23:0] shift_reg = 0;
-    reg [23:0] sample = 0;
-    reg        sample_valid = 0;
 
     // Absolute value for level detection
     wire [22:0] magnitude;
