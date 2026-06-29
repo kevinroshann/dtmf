@@ -1,10 +1,16 @@
 import math
 
 FS = 8000.0
-FREQ = 941.0
+FREQ1 = 770.0
+FREQ2 = 1633.0
+AMP = 16383
 
 for n in range(128):
-    v = round(32767 * math.sin(2 * math.pi * FREQ * n / FS))
+    v = round(
+        AMP * math.sin(2 * 3.14* FREQ1 * n / FS) +
+        AMP * math.sin(2 * 3.14 * FREQ2 * n / FS)
+    )
+
     if v >= 0:
         print(f"7'd{n}: sample = 16'sd{v};")
     else:

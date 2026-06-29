@@ -1,141 +1,155 @@
-// `timescale 1ps/1ps
-
-// module tb_goertzel;
-
-// reg clk;
-// reg reset;
-// initial begin
-//     clk = 0;
-//     reset=1;
-//     #100
-//     reset=0;
-//     forever #41667 clk = ~clk;
-// end
-
-// wire signed [15:0] maxcoeff;
-//     wire signed [63:0] power ;
-//     wire signed [63:0] power_tb ;
-//     wire signed [63:0] max_power ;
-//     wire signed [15:0] COEFF_tb;
-// goertzel dut(
-// .clk(clk),
-//     // .led_amber_n(),
-//     // .led_blue_n()
-// .reset(reset),
-// .maxcoeff(maxcoeff),
-// .power(power),
-// .power_tb(power_tb),
-// .COEFF_tb(COEFF_tb),
-// .max_power(max_power)
-
-// );
-
-// integer F;
-// initial begin
-//     $dumpfile("wave.vcd");
-//     $dumpvars(0, tb_goertzel);
-// end
-// initial begin
-//    #90000000;  // 1 us with 1ps timescale
-// case(maxcoeff) 
-//     16'sd28106 : F = 697;
-//     16'sd27018 : F = 770; 
-//     16'sd25330 : F = 852;
-//     16'sd24126 : F = 941; 
-//     16'sd19478 : F = 1209; 
-//     16'sd16846 : F = 1336; 
-//     16'sd12490 : F = 1477; 
-//     16'sd9220  : F = 1633;
-//     default    : F = 0; // Highly recommended to avoid uninitialized 'x' values
-// endcase
-//     $display("final value is %0d %0d",F,maxcoeff);
-//     $finish;
-    
-// end
-
-
-// initial begin
-//     $monitor("Time=%0t power=%0d max_power=%0d coeff=%0d max_coeff=%0d", $time, power_tb,max_power,COEFF_tb, maxcoeff);
-// end
-// endmodule
 `timescale 1ns/1ps
 
 module tb_goertzel;
 
-    reg clk;
-    reg reset;
-    
-    wire signed [15:0] maxcoeff;
-    wire signed [63:0] power;
-    wire signed [63:0] power_tb;
-    wire signed [63:0] max_power;
+reg clk;
+reg reset;
+
+
+
+reg [7:0] key [0:3][0:3];
+integer j,k;
+
+initial begin
+    key[0][0] = "1"; key[0][1] = "2"; key[0][2] = "3"; key[0][3] = "A";
+    key[1][0] = "4"; key[1][1] = "5"; key[1][2] = "6"; key[1][3] = "B";
+    key[2][0] = "7"; key[2][1] = "8"; key[2][2] = "9"; key[2][3] = "C";
+    key[3][0] = "*"; key[3][1] = "0"; key[3][2] = "#"; key[3][3] = "D";
+end
+
+wire signed [15:0] maxcoeff;
+    wire signed [63:0] power ;
+    wire signed [63:0] power_tb ;
+    wire signed [63:0] max_power ;
     wire signed [15:0] COEFF_tb;
-    integer F;
 
-    // Instantiate Device Under Test
-    goertzel dut (
-        .clk(clk),
-        .reset(reset),
-        .maxcoeff(maxcoeff),
-        .power(power),
-        .power_tb(power_tb),
-        .COEFF_tb(COEFF_tb),
-        .max_power(max_power)
-    );
 
-    // 12 MHz Clock Generator (Period = 83.333 ns -> Half-Period = 41.667 ns)
-    always #41.667 clk = ~clk;
+reg reset1;
 
-    initial begin
-        $dumpfile("wave.vcd");
-        $dumpvars(0, tb_goertzel);
-        
-        // Initialize signals
+
+wire signed [15:0] maxcoeff1;
+    wire signed [63:0] power1 ;
+    wire signed [63:0] power_tb1 ;
+    wire signed [63:0] max_power1 ;
+    wire signed [15:0] COEFF_tb1;
+
+goertzel dut(
+.clk(clk),
+.reset(reset),
+.maxcoeff(maxcoeff),
+.power(power),
+.power_tb(power_tb),
+.COEFF_tb(COEFF_tb),
+.max_power(max_power)
+
+);
+
+goertzel1 dut1(
+.clk(clk),
+.reset(reset1),
+.maxcoeff(maxcoeff1),
+.power(power1),
+.power_tb(power_tb1),
+.COEFF_tb(COEFF_tb1),
+.max_power(max_power1)
+
+);
+
+
+
+always #41.667 clk = ~clk;
+
+integer F;
+
+initial begin
+    $dumpfile("wave.vcd");
+    $dumpvars(0, tb_goertzel);
         clk = 0;
-        reset = 1;
-        
-        // Hold reset for 3 full clock cycles
-        #250; 
-        reset = 0;
-        
-        // Print progress monitor directly to the terminal
-        $monitor("Time=%0t ns | Bin Index=%0d | Coeff=%0d | Power=%0d | Peak Power Found=%0d", 
-                 $time, dut.i, COEFF_tb, power_tb, max_power);
-        
-        // --- DYNAMIC TERMINATION ---
-        // Instead of hardcoding delays, we wait until the design finishes the 
-        // 8th frequency bin (index i = 7) and the 128th sample (count = 127).
-        @(posedge clk);
-        while (dut.i !== 3'd7 || dut.count !== 7'd127) begin
-            @(posedge clk);
-        end
-        
-        // Wait 1 final clock cycle to allow the final comparison logic 
-        // to update the register outputs (maxcoeff, max_power)
-        @(posedge clk);
-
-        // Map the highest recorded coefficient to its corresponding frequency
-        case(maxcoeff) 
-            16'sd28106 : F = 697;
-            16'sd27018 : F = 770; 
-            16'sd25330 : F = 852;
-            16'sd24126 : F = 941; 
-            16'sd19478 : F = 1209;
-            16'sd16846 : F = 1336; 
-            16'sd12490 : F = 1477; 
-            16'sd9220  : F = 1633;
-            default    : F = 0;
-        endcase
-
-        $display("\n=================================");
-        $display("       DETECTION COMPLETE        ");
-        $display("=================================");
-        $display("Detected Frequency : %0d Hz", F);
-        $display("Winning Coefficient: %0d", maxcoeff);
-        $display("Peak Calculated Power: %0d", max_power);
-        $display("=================================\n");
-        
-        $finish;
+    reset=1;
+    #100
+    reset=0;
+          $monitor("time=%0t , i=%0d , coeff=%0d , power=%0d , peakpower=%0d", 
+                $time, dut.i, COEFF_tb, power_tb, max_power);
+   #50000;  
+case(maxcoeff) 
+    16'sd28106 :begin
+        F = 697;
+        j=0;
     end
+    16'sd27018 : begin
+        F = 770; 
+        j=1;
+    end
+    16'sd25330 : begin
+        F = 852;
+        j=2;
+    end
+    16'sd24126 : 
+    begin
+    F = 941; 
+    j=3;
+    end
+    // 16'sd19478 : F = 1209; 
+    // 16'sd16846 : F = 1336; 
+    // 16'sd12490 : F = 1477; 
+    // 16'sd9220  : F = 1633;
+    default    : F = 0;
+endcase
+
+        $display("det freq: %0d Hz", F);
+        $display("power peak: %0d", max_power);
+        
+
+
+           clk = 0;
+    reset1=1;
+    #100
+    reset1=0;
+          $monitor("time=%0t , i=%0d , coeff=%0d , power=%0d , peakpower=%0d", 
+                $time, dut1.i, COEFF_tb1, power_tb1, max_power1);
+   #50000;  
+case(maxcoeff1) 
+    // 16'sd28106 : F = 697;
+    // 16'sd27018 : F = 770; 
+    // 16'sd25330 : F = 852;
+    // 16'sd24126 : F = 941; 
+    16'sd19478 : begin 
+        F = 1209;
+        k=0;
+    end 
+
+    16'sd16846 : begin
+        F = 1336; 
+        k=1;
+    end
+    16'sd12490 :begin
+        F = 1477;
+        k=2;
+    end 
+    16'sd9220  :begin
+      
+  F = 1633;
+k=3;
+end 
+    default    : F = 0;
+endcase
+
+        $display("det freq: %0d Hz", F);
+        $display("power peak: %0d", max_power1);
+
+$display("key is: %0s", key[j][k]);
+
+
+
+
+
+
+        $finish;
+    
+end
+
+
+
+
 
 endmodule
